@@ -12,7 +12,13 @@
 NSString * const service1UUID = @"FFF0";
 NSString * const service2UUID = @"FFE0";
 
-@interface ViewController () <UITableViewDelegate, UITableViewDataSource, CBCentralManagerDelegate>
+#pragma pack(1)
+typedef struct Date {
+    uint8_t second;
+} Date;
+#pragma pack()
+
+@interface ViewController () <UITableViewDelegate, UITableViewDataSource, CBCentralManagerDelegate, CBPeripheralDelegate>
 @property (nonatomic, strong) UITableView *tableView;
 
 @property (nonatomic, strong) CBCentralManager *centralManager;
@@ -56,6 +62,7 @@ NSString * const service2UUID = @"FFE0";
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *,id> *)advertisementData RSSI:(NSNumber *)RSSI {
     if(peripheral.name.length > 0) {
+        NSLog(@"%@", peripheral.name);
         if(![self existPeripheral:peripheral]) {
             [self.peripheralList addObject:peripheral];
             [self.tableView reloadData];
@@ -114,7 +121,12 @@ NSString * const service2UUID = @"FFE0";
 
 // 更新了配件的特征值
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
-    NSLog(@"peripheral %@ characteristic %@", peripheral, characteristic);
+    NSData *data = characteristic.value;
+    if(data.length > 0) {
+        const char *bytes = data.bytes;
+        NSString *sec = [NSString stringWithCString:bytes encoding:NSUTF8StringEncoding];
+        NSLog(@"sec = %@", sec);
+    }
 }
 
 #pragma mark -
