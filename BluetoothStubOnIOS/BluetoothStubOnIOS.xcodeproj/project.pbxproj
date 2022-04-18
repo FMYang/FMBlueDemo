@@ -37,6 +37,7 @@
 		E1D0BC351C1B189B00F46E04 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E1D0BC371C1B189B00F46E04 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E1D0BC571C1D61AB00F46E04 /* peripheral_servers.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = peripheral_servers.json; sourceTree = "<group>"; };
+		E4540923280D3E270017AD13 /* BlueTips.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BlueTips.md; sourceTree = "<group>"; };
 		E4651D0E28098A3E001A8554 /* BabyDefine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BabyDefine.m; sourceTree = "<group>"; };
 		E4651D0F28098A3E001A8554 /* BabyRhythm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BabyRhythm.h; sourceTree = "<group>"; };
 		E4651D1028098A3E001A8554 /* BabyCallback.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BabyCallback.m; sourceTree = "<group>"; };
@@ -98,6 +99,7 @@
 				E1D0BC371C1B189B00F46E04 /* Info.plist */,
 				E1D0BC261C1B189B00F46E04 /* Supporting Files */,
 				E1D0BC571C1D61AB00F46E04 /* peripheral_servers.json */,
+				E4540923280D3E270017AD13 /* BlueTips.md */,
 			);
 			path = BluetoothStubOnIOS;
 			sourceTree = "<group>";

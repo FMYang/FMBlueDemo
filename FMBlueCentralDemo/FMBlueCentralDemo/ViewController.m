@@ -8,15 +8,23 @@
 #import "ViewController.h"
 #import "FMListCell.h"
 #import <CoreBluetooth/CoreBluetooth.h>
+#import <Masonry/Masonry.h>
 
 NSString * const service1UUID = @"FFF0";
 NSString * const service2UUID = @"FFE0";
+
+NSString* const WRITE_CHARACTERISTIC_UUID   = @"D44BC439-ABFD-45A2-B575-925416129600";
+NSString* const NOTIFY_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129601";
+NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129610";
 
 #pragma pack(1)
 typedef struct Date {
     uint8_t second;
 } Date;
 #pragma pack()
+
+#define kScreenWidth    [UIScreen mainScreen].bounds.size.width
+#define kScreenHeight   [UIScreen mainScreen].bounds.size.height
 
 @interface ViewController () <UITableViewDelegate, UITableViewDataSource, CBCentralManagerDelegate, CBPeripheralDelegate>
 @property (nonatomic, strong) UITableView *tableView;
@@ -32,7 +40,7 @@ typedef struct Date {
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self.view addSubview:self.tableView];
+
     _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
 }
 
@@ -62,7 +70,7 @@ typedef struct Date {
 
 - (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary<NSString *,id> *)advertisementData RSSI:(NSNumber *)RSSI {
     if(peripheral.name.length > 0) {
-        NSLog(@"%@", peripheral.name);
+        NSLog(@"%@ %@", peripheral.name, advertisementData);
         if(![self existPeripheral:peripheral]) {
             [self.peripheralList addObject:peripheral];
             [self.tableView reloadData];
@@ -71,6 +79,7 @@ typedef struct Date {
 }
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
+    // 连接成功
     [self.centralManager stopScan];
     [peripheral discoverServices:nil];
     [self.tableView reloadData];
@@ -100,10 +109,10 @@ typedef struct Date {
         NSLog(@"发现特征 %@", characteristic);
         // 6、发现特征了
         // WRITE_CHARACTERISTIC_UUID
-//        if([characteristic.UUID.UUIDString isEqualToString:WRITE_CHARACTERISTIC_UUID]) {
-//            self.characteristic = characteristic;
-//            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
-//        }
+        if([characteristic.UUID.UUIDString isEqualToString:WRITE_CHARACTERISTIC_UUID]) {
+            self.characteristic = characteristic;
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
         // 订阅通知
         [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
         [self.peripheral readValueForCharacteristic:characteristic];
@@ -160,12 +169,25 @@ typedef struct Date {
 }
 
 #pragma mark -
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
+//    NSData *data = [@"hahaha" dataUsingEncoding:NSUTF8StringEncoding];
+    Byte bytes[4] = {0x01, 0x02, 0x03, 0x04};
+    NSData *data = [NSData dataWithBytes:bytes length:4];
+    [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
+}
+
+#pragma mark -
 - (UITableView *)tableView {
     if(!_tableView) {
-        _tableView = [[UITableView alloc] initWithFrame:self.view.bounds];
+        _tableView = [[UITableView alloc] init];
         _tableView.delegate = self;
         _tableView.dataSource = self;
         [_tableView registerClass:FMListCell.class forCellReuseIdentifier:@"listCell"];
+        [self.view addSubview:_tableView];
+        [_tableView mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.left.right.equalTo(self.view);
+            make.height.mas_equalTo(0.5 * kScreenHeight);
+        }];
     }
     return _tableView;
 }

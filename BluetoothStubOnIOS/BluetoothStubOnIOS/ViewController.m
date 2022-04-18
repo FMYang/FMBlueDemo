@@ -9,6 +9,9 @@
 #import "ViewController.h"
 #import "BabyBluetooth.h"
 
+NSString* const WRITE_CHARACTERISTIC_UUID   = @"D44BC439-ABFD-45A2-B575-925416129600";
+NSString* const NOTIFY_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129601";
+NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129610";
 
 @interface ViewController (){
     BabyBluetooth *baby;
@@ -21,14 +24,16 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    // "D44BC439-ABFD-45A2-B575-925416129601"
+    
     //配置第一个服务s1
     CBMutableService *s1 = makeCBService(@"FFF0");
     //配置s1的3个characteristic
     makeCharacteristicToService(s1, @"FFF1", @"r", @"hello1");//读
-    makeCharacteristicToService(s1, @"FFF2", @"w", @"hello2");//写
-    makeCharacteristicToService(s1, genUUID(), @"rw", @"hello3");//读写,自动生成uuid
+    makeCharacteristicToService(s1, WRITE_CHARACTERISTIC_UUID, @"rw", @"hello2");//写
+    makeCharacteristicToService(s1, @"D44BC439-ABFD-45A2-B575-925416129622", @"rw", @"hello3");//读写,自动生成uuid
     makeCharacteristicToService(s1, @"FFF4", nil, @"hello4");//默认读写字段
-    makeCharacteristicToService(s1, @"FFF5", @"n", @"hello5");//notify字段
+    makeCharacteristicToService(s1, NOTIFY_CHARACTERISTIC_UUID, @"n", @"hello5");//notify字段
     //配置第一个服务s2
     CBMutableService *s2 = makeCBService(@"FFE0");
     makeStaticCharacteristicToService(s2, genUUID(), @"hello6", [@"a" dataUsingEncoding:NSUTF8StringEncoding]);//一个含初值的字段，该字段权限只能是只读
@@ -37,7 +42,7 @@
     //配置委托
     [self babyDelegate];
     //添加服务和启动外设
-    baby.bePeripheral().addServices(@[s1,s2]).startAdvertising();
+    baby.bePeripheralWithName(@"FMSmoothX").addServices(@[s1,s2]).startAdvertising();
 }
 
 //配置委托
@@ -51,16 +56,22 @@
     //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidStartAdvertising:^(CBPeripheralManager *peripheral, NSError *error) {
         NSLog(@"didStartAdvertising !!!");
+        
     }];
     
     //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidAddService:^(CBPeripheralManager *peripheral, CBService *service, NSError *error) {
         NSLog(@"Did Add Service uuid: %@ ",service.UUID);
+//        0x0905260201ffff4d2407050002
+//        Byte bytes[13] = {0x09, 0x05, 0x26, 0x02, 0x01, 0xff, 0xff, 0x4d, 0x24, 0x07, 0x05, 0x00, 0x11};
+//        NSData *data = [NSData dataWithBytes:bytes length:13];
+        // The advertisement key 'Manufacturer Data' is not allowed
+        [peripheral startAdvertising:@{CBAdvertisementDataLocalNameKey: @"FMSmoothX"}];
     }];
     
     //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidReceiveReadRequest:^(CBPeripheralManager *peripheral,CBATTRequest *request) {
-        NSLog(@"request characteristic uuid:%@",request.characteristic.UUID);
+        NSLog(@"request characteristic uuid:%@ %@",request.characteristic.UUID, request);
         //判断是否有读数据的权限
         if (request.characteristic.properties & CBCharacteristicPropertyRead) {
             NSData *data = request.characteristic.value;
@@ -75,8 +86,8 @@
     
     //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidReceiveWriteRequests:^(CBPeripheralManager *peripheral,NSArray *requests) {
-        NSLog(@"didReceiveWriteRequests");
         CBATTRequest *request = requests[0];
+        NSLog(@"didReceiveWriteRequests %@", request);
         //判断是否有写数据的权限
         if (request.characteristic.properties & CBCharacteristicPropertyWrite) {
             //需要转换成CBMutableCharacteristic对象才能进行写值
@@ -94,7 +105,7 @@
     [baby peripheralModelBlockOnDidSubscribeToCharacteristic:^(CBPeripheralManager *peripheral, CBCentral *central, CBCharacteristic *characteristic) {
         NSLog(@"订阅了 %@的数据",characteristic.UUID);
         //每秒执行一次给主设备发送一个当前时间的秒数
-        timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(sendData:) userInfo:characteristic  repeats:YES];
+//        timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(sendData:) userInfo:characteristic  repeats:YES];
     }];
     
     //设置添加service委托 | set didAddService block
