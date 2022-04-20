@@ -17,6 +17,10 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
     BabyBluetooth *baby;
 }
 
+@property (nonatomic) CBCentral *central;
+@property (nonatomic) CBPeripheralManager *peripheralManager;
+@property (nonatomic) CBMutableCharacteristic *characteristic;
+
 @end
 
 @implementation ViewController
@@ -43,23 +47,32 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
     [self babyDelegate];
     //添加服务和启动外设
     baby.bePeripheralWithName(@"FMSmoothX").addServices(@[s1,s2]).startAdvertising();
+    
+    UIButton *startBtn = [[UIButton alloc] initWithFrame:CGRectMake(100, 100, 100, 40)];
+    [startBtn setTitle:@"start" forState:UIControlStateNormal];
+    [startBtn setTitleColor:UIColor.redColor forState:UIControlStateNormal];
+    [startBtn addTarget:self action:@selector(startAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:startBtn];
+    
+    UIButton *stopBtn = [[UIButton alloc] initWithFrame:CGRectMake(220, 100, 100, 40)];
+    [stopBtn setTitle:@"stop" forState:UIControlStateNormal];
+    [stopBtn setTitleColor:UIColor.redColor forState:UIControlStateNormal];
+    [stopBtn addTarget:self action:@selector(stopAction) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:stopBtn];
+    
 }
 
 //配置委托
 - (void)babyDelegate{
-
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnPeripheralManagerDidUpdateState:^(CBPeripheralManager *peripheral) {
         NSLog(@"PeripheralManager trun status code: %ld",(long)peripheral.state);
     }];
     
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidStartAdvertising:^(CBPeripheralManager *peripheral, NSError *error) {
         NSLog(@"didStartAdvertising !!!");
         
     }];
     
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidAddService:^(CBPeripheralManager *peripheral, CBService *service, NSError *error) {
         NSLog(@"Did Add Service uuid: %@ ",service.UUID);
 //        0x0905260201ffff4d2407050002
@@ -69,7 +82,6 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
         [peripheral startAdvertising:@{CBAdvertisementDataLocalNameKey: @"FMSmoothX"}];
     }];
     
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidReceiveReadRequest:^(CBPeripheralManager *peripheral,CBATTRequest *request) {
         NSLog(@"request characteristic uuid:%@ %@",request.characteristic.UUID, request);
         //判断是否有读数据的权限
@@ -84,7 +96,6 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
         }
     }];
     
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidReceiveWriteRequests:^(CBPeripheralManager *peripheral,NSArray *requests) {
         CBATTRequest *request = requests[0];
         NSLog(@"didReceiveWriteRequests %@", request);
@@ -94,21 +105,31 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
             CBMutableCharacteristic *c =(CBMutableCharacteristic *)request.characteristic;
             c.value = request.value;
             [peripheral respondToRequest:request withResult:CBATTErrorSuccess];
+            
+            // 响应
+            [peripheral updateValue:request.value forCharacteristic:request.characteristic onSubscribedCentrals:@[request.central]];
         }else{
             [peripheral respondToRequest:request withResult:CBATTErrorWriteNotPermitted];
         }
-        
     }];
     
     __block NSTimer *timer;
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidSubscribeToCharacteristic:^(CBPeripheralManager *peripheral, CBCentral *central, CBCharacteristic *characteristic) {
         NSLog(@"订阅了 %@的数据",characteristic.UUID);
+        if([characteristic.UUID.UUIDString isEqualToString:NOTIFY_CHARACTERISTIC_UUID]) {
+            self.characteristic = (CBMutableCharacteristic *)characteristic;
+            self.peripheralManager = peripheral;
+            self.central = central;
+        }
         //每秒执行一次给主设备发送一个当前时间的秒数
 //        timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(sendData:) userInfo:characteristic  repeats:YES];
+        // 0x243c08001812f3017c000000bc8c
+        Byte bytes[14] = {0x24, 0x3c, 0x08, 0x00, 0x18, 0x12, 0xf3, 0x01, 0x7c, 0x00, 0x00, 0x00, 0xbc, 0x8c};
+        NSData *data = [NSData dataWithBytes:bytes length:14];
+        
+        [peripheral updateValue:data forCharacteristic:(CBMutableCharacteristic *)characteristic onSubscribedCentrals:@[central]];
     }];
     
-    //设置添加service委托 | set didAddService block
     [baby peripheralModelBlockOnDidUnSubscribeToCharacteristic:^(CBPeripheralManager *peripheral, CBCentral *central, CBCharacteristic *characteristic) {
         NSLog(@"peripheralManagerIsReadyToUpdateSubscribers");
         [timer fireDate];
@@ -124,6 +145,54 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
     NSLog(@"%@",[dft stringFromDate:[NSDate date]]);
 //    执行回应Central通知数据
     return  [baby.peripheralManager updateValue:[[dft stringFromDate:[NSDate date]] dataUsingEncoding:NSUTF8StringEncoding] forCharacteristic:(CBMutableCharacteristic *)characteristic onSubscribedCentrals:nil];
+}
+
+- (void)startAction {
+    // 0x243c08001812071620c03f007a71 录像
+    NSData *data = [self convertHexStrToData:@"243c08001812071620c03f007a71"];
+    [self.peripheralManager updateValue:data forCharacteristic:self.characteristic onSubscribedCentrals:@[self.central]];
+}
+
+- (void)stopAction {
+    // 0x243c08001812081620c03f0079b4 停止录像
+    NSData *data = [self convertHexStrToData:@"243c08001812081620c03f0079b4"];
+    [self.peripheralManager updateValue:data forCharacteristic:self.characteristic onSubscribedCentrals:@[self.central]];
+}
+
+/**
+ M键
+ 1.循环切换拍摄模式 0x243c080018122e1620c03300fd49
+ 2.前后置切换 0x243c08001812301620c03300dad3
+ */
+
+#pragma mark - tool
+// 16进制转NSData
+- (NSData *)convertHexStrToData:(NSString *)str
+{
+    if (!str || [str length] == 0) {
+        return nil;
+    }
+    
+    NSMutableData *hexData = [[NSMutableData alloc] initWithCapacity:20];
+    NSRange range;
+    if ([str length] % 2 == 0) {
+        range = NSMakeRange(0, 2);
+    } else {
+        range = NSMakeRange(0, 1);
+    }
+    for (NSInteger i = range.location; i < [str length]; i += 2) {
+        unsigned int anInt;
+        NSString *hexCharStr = [str substringWithRange:range];
+        NSScanner *scanner = [[NSScanner alloc] initWithString:hexCharStr];
+        
+        [scanner scanHexInt:&anInt];
+        NSData *entity = [[NSData alloc] initWithBytes:&anInt length:1];
+        [hexData appendData:entity];
+        
+        range.location += range.length;
+        range.length = 2;
+    }
+    return hexData;
 }
 
 @end

@@ -1,5 +1,31 @@
 #  Tips
 
+Cami蓝牙sdk连接自定义外设，修改三个地方，即可模拟稳定器连接cami
+* 第一个地方：CBCharacteristicWriteWithoutResponse改为CBCharacteristicWriteWithResponse
+[self writeData:[data subdataWithRange:NSMakeRange(offset, length)] withCharacteristic:self.discoverPeripheralData.writeCharacteristic type:CBCharacteristicWriteWithResponse];
+* 第二个地方： filterUnZYDevice = NO;
+* 第三个地方：
+```
+//设备连接上之后必须读取的数据，绕开读取真实设备的过程
+-(void)queryMustData{
+    self.workingState = 1;
+    self.activeState = ActiveStatueActive;
+    [self doUpgradeCheck];
+    return;
+}
+// 产品类型，写死个模拟设备
+-(void)setAdvertisementData:(NSDictionary *)advertisementData{
+    _advertisementData = advertisementData;
+    if (_productType == ZYProductUnknow) {
+        _productType = ZYProductSmoothX;//[ZYScanTools translateToModelNumberWithAdvertisementData:_advertisementData];
+
+    }
+    [self changeProductType];
+}
+```
+
+一些碰到的问题记录：
+
 1、The advertisement key 'Manufacturer Data' is not allowed
 
 https://developer.apple.com/documentation/corebluetooth/cbperipheralmanager/1393252-startadvertising?language=objc
@@ -29,8 +55,13 @@ advertisementData
 
 4、查询序列号这步走不通，序列号放在kCBAdvDataManufacturerData，外设设置不了
 
-//设备连接上之后必须读取的数据
--(void)queryMustData;
+//设备连接上之后必须读取的数据，绕开读取真实设备的过程
+-(void)queryMustData{
+    self.workingState = 1;
+    self.activeState = ActiveStatueActive;
+    [self doUpgradeCheck];
+    return;
+}
 
 qurySystemStatus
 
