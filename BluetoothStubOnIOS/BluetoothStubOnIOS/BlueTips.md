@@ -5,6 +5,8 @@ Cami蓝牙sdk连接自定义外设，修改三个地方，即可模拟稳定器�
 [self writeData:[data subdataWithRange:NSMakeRange(offset, length)] withCharacteristic:self.discoverPeripheralData.writeCharacteristic type:CBCharacteristicWriteWithResponse];
 * 第二个地方： filterUnZYDevice = NO;
 * 第三个地方：
+
+修改的分支: pod 'ZYDeviceSDK', :path => '~/fm/blueSDK'
 ```
 //设备连接上之后必须读取的数据，绕开读取真实设备的过程
 -(void)queryMustData{
