@@ -8,12 +8,13 @@
 
 #import "ViewController.h"
 #import "BabyBluetooth.h"
+#import "FMEventObject.h"
 
 NSString* const WRITE_CHARACTERISTIC_UUID   = @"D44BC439-ABFD-45A2-B575-925416129600";
 NSString* const NOTIFY_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129601";
 NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129610";
 
-@interface ViewController (){
+@interface ViewController()<UITableViewDelegate, UITableViewDataSource> {
     BabyBluetooth *baby;
 }
 
@@ -21,14 +22,15 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
 @property (nonatomic) CBPeripheralManager *peripheralManager;
 @property (nonatomic) CBMutableCharacteristic *characteristic;
 
+@property (nonatomic) UITableView *tableView;
+@property (nonatomic) NSArray *datasource;
+
 @end
 
 @implementation ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    // "D44BC439-ABFD-45A2-B575-925416129601"
     
     //配置第一个服务s1
     CBMutableService *s1 = makeCBService(@"FFF0");
@@ -48,18 +50,11 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
     //添加服务和启动外设
     baby.bePeripheralWithName(@"FMSmoothX").addServices(@[s1,s2]).startAdvertising();
     
-    UIButton *startBtn = [[UIButton alloc] initWithFrame:CGRectMake(100, 100, 100, 40)];
-    [startBtn setTitle:@"start" forState:UIControlStateNormal];
-    [startBtn setTitleColor:UIColor.redColor forState:UIControlStateNormal];
-    [startBtn addTarget:self action:@selector(startAction) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:startBtn];
-    
-    UIButton *stopBtn = [[UIButton alloc] initWithFrame:CGRectMake(220, 100, 100, 40)];
-    [stopBtn setTitle:@"stop" forState:UIControlStateNormal];
-    [stopBtn setTitleColor:UIColor.redColor forState:UIControlStateNormal];
-    [stopBtn addTarget:self action:@selector(stopAction) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:stopBtn];
-    
+    _tableView = [[UITableView alloc] initWithFrame:self.view.frame];
+    _tableView.delegate = self;
+    _tableView.dataSource = self;
+    [_tableView registerClass:UITableViewCell.class forCellReuseIdentifier:@"cell"];
+    [self.view addSubview:_tableView];
 }
 
 //配置委托
@@ -124,10 +119,9 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
         //每秒执行一次给主设备发送一个当前时间的秒数
 //        timer = [NSTimer scheduledTimerWithTimeInterval:1 target:self selector:@selector(sendData:) userInfo:characteristic  repeats:YES];
         // 0x243c08001812f3017c000000bc8c
-        Byte bytes[14] = {0x24, 0x3c, 0x08, 0x00, 0x18, 0x12, 0xf3, 0x01, 0x7c, 0x00, 0x00, 0x00, 0xbc, 0x8c};
-        NSData *data = [NSData dataWithBytes:bytes length:14];
-        
-        [peripheral updateValue:data forCharacteristic:(CBMutableCharacteristic *)characteristic onSubscribedCentrals:@[central]];
+//        Byte bytes[14] = {0x24, 0x3c, 0x08, 0x00, 0x18, 0x12, 0xf3, 0x01, 0x7c, 0x00, 0x00, 0x00, 0xbc, 0x8c};
+//        NSData *data = [NSData dataWithBytes:bytes length:14];
+//        [peripheral updateValue:data forCharacteristic:(CBMutableCharacteristic *)characteristic onSubscribedCentrals:@[central]];
     }];
     
     [baby peripheralModelBlockOnDidUnSubscribeToCharacteristic:^(CBPeripheralManager *peripheral, CBCentral *central, CBCharacteristic *characteristic) {
@@ -147,28 +141,34 @@ NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-92541612
     return  [baby.peripheralManager updateValue:[[dft stringFromDate:[NSDate date]] dataUsingEncoding:NSUTF8StringEncoding] forCharacteristic:(CBMutableCharacteristic *)characteristic onSubscribedCentrals:nil];
 }
 
-- (void)startAction {
-    // 0x243c08001812071620c03f007a71 录像
-    NSData *data = [self convertHexStrToData:@"243c08001812071620c03f007a71"];
+#pragma mark -
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.datasource.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    FMEventObject *obj = self.datasource[indexPath.row];
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"cell" forIndexPath:indexPath];
+    cell.textLabel.text = obj.title;
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    FMEventObject *obj = self.datasource[indexPath.row];
+    NSData *data = [self convertHexStrToData:obj.eventDataHexStr];
     [self.peripheralManager updateValue:data forCharacteristic:self.characteristic onSubscribedCentrals:@[self.central]];
 }
 
-- (void)stopAction {
-    // 0x243c08001812081620c03f0079b4 停止录像
-    NSData *data = [self convertHexStrToData:@"243c08001812081620c03f0079b4"];
-    [self.peripheralManager updateValue:data forCharacteristic:self.characteristic onSubscribedCentrals:@[self.central]];
+- (NSArray *)datasource {
+    if(!_datasource) {
+        _datasource = [FMEventObject allObjects];
+    }
+    return _datasource;
 }
-
-/**
- M键
- 1.循环切换拍摄模式 0x243c080018122e1620c03300fd49
- 2.前后置切换 0x243c08001812301620c03300dad3
- */
 
 #pragma mark - tool
 // 16进制转NSData
-- (NSData *)convertHexStrToData:(NSString *)str
-{
+- (NSData *)convertHexStrToData:(NSString *)str {
     if (!str || [str length] == 0) {
         return nil;
     }
