@@ -9,6 +9,8 @@
 #import "FMListCell.h"
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <Masonry/Masonry.h>
+#import "math.h"
+#import "ZYBLHeadObject.h"
 
 NSString * const service1UUID = @"FFF0";
 NSString * const service2UUID = @"FFE0";
@@ -131,10 +133,8 @@ typedef struct Date {
 // 更新了配件的特征值
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     NSData *data = characteristic.value;
-    if(data.length > 0) {
-        const char *bytes = data.bytes;
-        NSString *sec = [NSString stringWithCString:bytes encoding:NSUTF8StringEncoding];
-        NSLog(@"sec = %@", sec);
+    if(data.length > 7) {
+        [self parseData:data];
     }
 }
 
@@ -170,7 +170,6 @@ typedef struct Date {
 
 #pragma mark -
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-//    NSData *data = [@"hahaha" dataUsingEncoding:NSUTF8StringEncoding];
     Byte bytes[4] = {0x01, 0x02, 0x03, 0x04};
     NSData *data = [NSData dataWithBytes:bytes length:4];
     [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
@@ -197,6 +196,24 @@ typedef struct Date {
         _peripheralList = @[].mutableCopy;
     }
     return _peripheralList;
+}
+
+#pragma mark - 数据解析
+- (void)parseData:(NSData *)data {
+    ZYBLHead *head = (ZYBLHead *)data.bytes;
+    
+    ZYBLHeadObject *object = [[ZYBLHeadObject alloc] init];
+    object.head = head->head;
+    object.length = head->length;
+    object.cmd = head->cmd;
+    object.addrs = head->addrs;
+    object.cmd_event = head->cmd_event;
+    
+    if(object.cmd == ZYBLCMD_EVENT) {
+        if(object.cmd_event == ZYBLCMDEvent_OTHER_EVENT) {
+            // 其他事件指令
+        }
+    }
 }
 
 @end
