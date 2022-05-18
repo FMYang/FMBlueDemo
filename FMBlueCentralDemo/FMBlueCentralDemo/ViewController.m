@@ -10,7 +10,7 @@
 #import <CoreBluetooth/CoreBluetooth.h>
 #import <Masonry/Masonry.h>
 #import "math.h"
-#import "ZYBLHeadObject.h"
+#import "ZYBLOtherEventObject.h"
 
 NSString * const service1UUID = @"FFF0";
 NSString * const service2UUID = @"FFE0";
@@ -212,6 +212,12 @@ typedef struct Date {
     if(object.cmd == ZYBLCMD_EVENT) {
         if(object.cmd_event == ZYBLCMDEvent_OTHER_EVENT) {
             // 其他事件指令
+            NSData *subData = [data subdataWithRange:NSMakeRange(sizeof(ZYBLHead), object.length - 2)];
+            Byte *bytes = (Byte *)subData.bytes;
+            if(bytes[0] == ZYBLOhterEvent_CMD_FUNC_EVENT) {
+                NSData *cmdFuncEventData = [subData subdataWithRange:NSMakeRange(1, subData.length - 1)];
+                
+            }
         }
     }
 }

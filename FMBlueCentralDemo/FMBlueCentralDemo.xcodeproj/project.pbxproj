@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		60A1B29D8D900609670D186E /* libPods-FMBlueCentralDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BDE8B24EBEA8A387C5968B0B /* libPods-FMBlueCentralDemo.a */; };
 		E43C3AD528337BC2004E5A78 /* ZYBLHeadObject.m in Sources */ = {isa = PBXBuildFile; fileRef = E43C3AD428337BC2004E5A78 /* ZYBLHeadObject.m */; };
+		E43C3AD8283495AE004E5A78 /* ZYBLOtherEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = E43C3AD7283495AD004E5A78 /* ZYBLOtherEventObject.m */; };
 		E4BD591A272BE4A100EDE172 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E4BD5919272BE4A100EDE172 /* AppDelegate.m */; };
 		E4BD5920272BE4A100EDE172 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E4BD591F272BE4A100EDE172 /* ViewController.m */; };
 		E4BD5923272BE4A100EDE172 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E4BD5921272BE4A100EDE172 /* Main.storyboard */; };
@@ -24,6 +25,8 @@
 		BDE8B24EBEA8A387C5968B0B /* libPods-FMBlueCentralDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FMBlueCentralDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E43C3AD328337BC2004E5A78 /* ZYBLHeadObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYBLHeadObject.h; sourceTree = "<group>"; };
 		E43C3AD428337BC2004E5A78 /* ZYBLHeadObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZYBLHeadObject.m; sourceTree = "<group>"; };
+		E43C3AD6283495AD004E5A78 /* ZYBLOtherEventObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYBLOtherEventObject.h; sourceTree = "<group>"; };
+		E43C3AD7283495AD004E5A78 /* ZYBLOtherEventObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZYBLOtherEventObject.m; sourceTree = "<group>"; };
 		E4BD5915272BE4A100EDE172 /* FMBlueCentralDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FMBlueCentralDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4BD5918272BE4A100EDE172 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		E4BD5919272BE4A100EDE172 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -101,6 +104,8 @@
 				E4BD592A272BE4AA00EDE172 /* main.m */,
 				E43C3AD328337BC2004E5A78 /* ZYBLHeadObject.h */,
 				E43C3AD428337BC2004E5A78 /* ZYBLHeadObject.m */,
+				E43C3AD6283495AD004E5A78 /* ZYBLOtherEventObject.h */,
+				E43C3AD7283495AD004E5A78 /* ZYBLOtherEventObject.m */,
 			);
 			path = FMBlueCentralDemo;
 			sourceTree = "<group>";
@@ -206,6 +211,7 @@
 				E4BD5933272BE6B800EDE172 /* FMListCell.m in Sources */,
 				E43C3AD528337BC2004E5A78 /* ZYBLHeadObject.m in Sources */,
 				E4BD592B272BE4AA00EDE172 /* main.m in Sources */,
+				E43C3AD8283495AE004E5A78 /* ZYBLOtherEventObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

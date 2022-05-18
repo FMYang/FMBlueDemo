@@ -41,11 +41,11 @@ typedef NS_ENUM(NSUInteger, ZYBLCMDEvent) {
 #pragma pack(push)
 #pragma pack(1)
 typedef struct {
-    unsigned short head;     // 包头
-    unsigned short length;   // 长度
-    unsigned char cmd: 4;    // 命令（低4位）
-    unsigned char addrs: 4;  // 设备地址（高4位）
-    unsigned char cmd_event; // 当cmd为0x08的时候，为此刻为CMD_EVENT
+    UInt16 head;     // 包头
+    UInt16 length;   // 长度
+    UInt8 cmd: 4;    // 命令（低4位）
+    UInt8 addrs: 4;  // 设备地址（高4位）
+    UInt8 cmd_event; // 当cmd为0x08的时候，为此刻为CMD_EVENT
 } ZYBLHead;
 #pragma pack(pop)
 
