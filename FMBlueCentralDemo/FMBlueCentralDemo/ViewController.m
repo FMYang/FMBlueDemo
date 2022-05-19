@@ -238,7 +238,6 @@ typedef struct Date {
                         break;
 
                     case BLFuncEventData_KEY_CAP_PARAMS:
-                        NSLog(@"");
                         // 0:设置激活参数上一档 1:设置激活参数下一档 2:设置ISO上一档 3:设置ISO下一档 4:设置快门上一档 5:设置快门下一档 6:设置白平衡上一档 7:设置白平衡下一档    设置拍摄参数
                         if(funcObject.param == 0) {
                             NSLog(@"设置激活参数上一档");
@@ -278,7 +277,13 @@ typedef struct Date {
                         break;
 
                     case BLFuncEventData_KEY_SMART:
-                        NSLog(@"SMART");
+                        if(funcObject.param == 0) {
+                            NSLog(@"退出");
+                        } else if(funcObject.param == 1) {
+                            NSLog(@"呼出");
+                        } else if(funcObject.param == 2) {
+                            NSLog(@"开/关 SMART菜单");
+                        }
                         break;
 
                     default:

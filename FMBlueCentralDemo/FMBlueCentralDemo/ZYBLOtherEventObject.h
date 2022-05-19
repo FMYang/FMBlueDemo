@@ -64,8 +64,8 @@ typedef NS_ENUM(NSUInteger, BLFuncEventData) {
     BLFuncEventData_KEY_FOCUS_MIN    = 0x0203,   // 0:结束手动对焦 1:开始手动对焦 2:自动对焦 3:对焦值减少 对焦-
     BLFuncEventData_KEY_SELECT_LENS    = 0x0204,   // 0:切换至上一个可用摄像头 1:切换至下一个可用摄像头 2:切换至可用前置摄像头 3:切换至可用后置摄像头    切换摄像头
     BLFuncEventData_KEY_SHOT    = 0x0205,    // 0:录制开始/结束循环 1:拍照    拍摄
-    BLFuncEventData_KEY_SMART    = 0x0206,   // 0:退出 1:呼出 2:开/关    SMART菜单
-    BLFuncEventData_KEY_ALBUM    = 0x0207,   // 0:退出 1:呼出 2:开/关    相册
+    BLFuncEventData_KEY_SMART    = 0x0206,   // 0:退出 1:呼出 2:开/关 SMART菜单
+    BLFuncEventData_KEY_ALBUM    = 0x0207,   // 0:退出 1:呼出 2:开/关 相册
     BLFuncEventData_KEY_SCENE    = 0x0208,    // 0:上一模式 1:下一模式 2:拍照 3:录像 4:全景 5:慢动作 6:希区柯克 7:延时摄影 8:AI Live    拍摄模式
     BLFuncEventData_KEY_SHORTCUT_MENU   = 0x0209,   // 0:退出 1:呼出 2:开/关    快捷菜单
     BLFuncEventData_KEY_MENUITEM_UP    = 0x020A,    // 上一选项
@@ -85,7 +85,7 @@ typedef NS_ENUM(NSUInteger, BLFuncEventData) {
     BLFuncEventData_KEY_MENUITEM_NEXT    = 0x0218,    // 下一选项
     BLFuncEventData_KEY_CAPTURE_MODE    = 0x0219,   // 0:设置快门，ISO 自动 1:设置快门，ISO 手动 2:设置快门，ISO 自动手动切换 3:设置白平衡参数模式自动 4:设置白平衡参数模式手动 5:设置白平衡参数模式自动手动切换 6:设置所有参数模式自动(快门，ISO ，WB) 7:设置所有参数模式手动(快门，ISO ，WB) 8:设置所有参数模式自动手动切换(快门，ISO ，WB)    设置参数模式
     BLFuncEventData_KEY_AUTOFOCUS    = 0x0220,  // 设置成自动对焦
-    BLFuncEventData_KEY_CAP_PARAMS_SET   = 0x0221,   // 0:设置激活参数上一档 1:设置激活参数下一档 2:设置ISO上一档 3:设置ISO下一档 4:设置快门上一档 5:设置快门下一档 6:设置白平衡上一档 7:设置白平衡下一档    设置拍摄参数*/
+    BLFuncEventData_KEY_CAP_PARAMS_SET   = 0x0221,   // 0:设置激活参数上一档 1:设置激活参数下一档 2:设置ISO上一档 3:设置ISO下一档 4:设置快门上一档 5:设置快门下一档 6:设置白平衡上一档 7:设置白平衡下一档 设置拍摄参数*/
 };
 
 @interface ZYBLOtherEventObject : ZYBLHeadObject
