@@ -215,8 +215,75 @@ typedef struct Date {
             NSData *subData = [data subdataWithRange:NSMakeRange(sizeof(ZYBLHead), object.length - 2)];
             Byte *bytes = (Byte *)subData.bytes;
             if(bytes[0] == ZYBLOhterEvent_CMD_FUNC_EVENT) {
-                NSData *cmdFuncEventData = [subData subdataWithRange:NSMakeRange(1, subData.length - 1)];
+                ZYBLCMDFuncEvent *event = (ZYBLCMDFuncEvent *)bytes;
+                ZYBLOtherEventObject *funcObject = [[ZYBLOtherEventObject alloc] init];
+                funcObject.otherEvent = event->otherEvent;
+                funcObject.packId = event->pack_id;
+                funcObject.func_cmd = event->cmd;
+                funcObject.flag = event->flag;
+                funcObject.data = event->data;
+                funcObject.param = event->param;
                 
+                switch (funcObject.data) {
+                    case BLFuncEventData_KEY_SHOT:
+                        if(funcObject.param == 0) {
+                            NSLog(@"录像");
+                        } else if(funcObject.param == 1) {
+                            NSLog(@"拍照");
+                        }
+                        break;
+
+                    case BLFuncEventData_KEY_SELECT_LENS:
+                        NSLog(@"切换摄像头");
+                        break;
+
+                    case BLFuncEventData_KEY_CAP_PARAMS:
+                        NSLog(@"");
+                        // 0:设置激活参数上一档 1:设置激活参数下一档 2:设置ISO上一档 3:设置ISO下一档 4:设置快门上一档 5:设置快门下一档 6:设置白平衡上一档 7:设置白平衡下一档    设置拍摄参数
+                        if(funcObject.param == 0) {
+                            NSLog(@"设置激活参数上一档");
+                        } else if(funcObject.param == 1) {
+                            NSLog(@"设置激活参数下一档");
+                        } else if(funcObject.param == 2) {
+                            NSLog(@"设置ISO上一档");
+                        } else if(funcObject.param == 3) {
+                            NSLog(@"设置ISO下一档");
+                        } else if(funcObject.param == 4) {
+                            NSLog(@"设置快门上一档");
+                        } else if(funcObject.param == 5) {
+                            NSLog(@"设置快门下一档");
+                        } else if(funcObject.param == 6) {
+                            NSLog(@"设置白平衡上一档");
+                        } else if(funcObject.param == 7) {
+                            NSLog(@"设置白平衡下一档");
+                        } else {
+                            NSLog(@"设置拍摄参数");
+                        }
+                        break;
+
+                    case BLFuncEventData_KEY_ALBUM:
+                        NSLog(@"相册");
+                        break;
+
+                    case BLFuncEventData_KEY_MENUITEM_NEXT:
+                        NSLog(@"下一选项");
+                        break;
+
+                    case BLFuncEventData_KEY_MENUITEM_PREVIOUS:
+                        NSLog(@"上一选项");
+                        break;
+
+                    case BLFuncEventData_KEY_CONFIRM:
+                        NSLog(@"OK");
+                        break;
+
+                    case BLFuncEventData_KEY_SMART:
+                        NSLog(@"SMART");
+                        break;
+
+                    default:
+                        break;
+                }
             }
         }
     }
