@@ -11,19 +11,22 @@
 #import <Masonry/Masonry.h>
 #import "math.h"
 #import "ZYBLOtherEventObject.h"
+#import "ZYRhythm.h"
 
-NSString * const service1UUID = @"FFF0";
-NSString * const service2UUID = @"FFE0";
+//NSString* const sendServiceUUID16           = @"FEE9";
+NSString * const service1UUID = @"FEE9";
+NSString * const service2UUID = @"0000FEE9-0000-1000-8000-00805F9B34FB";
 
 NSString* const WRITE_CHARACTERISTIC_UUID   = @"D44BC439-ABFD-45A2-B575-925416129600";
 NSString* const NOTIFY_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129601";
 NSString* const RESEND_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129610";
 
+#pragma pack(push)
 #pragma pack(1)
 typedef struct Date {
     uint8_t second;
 } Date;
-#pragma pack()
+#pragma pack(pop)
 
 #define kScreenWidth    [UIScreen mainScreen].bounds.size.width
 #define kScreenHeight   [UIScreen mainScreen].bounds.size.height
@@ -33,8 +36,13 @@ typedef struct Date {
 
 @property (nonatomic, strong) CBCentralManager *centralManager;
 @property (nonatomic, strong) CBPeripheral *peripheral;
-@property (nonatomic, strong) CBCharacteristic *characteristic;
 @property (nonatomic, strong) NSMutableArray<CBPeripheral *> *peripheralList;
+
+@property (nonatomic, strong) CBCharacteristic *writeCharacteristic;
+@property (nonatomic, strong) CBCharacteristic *notiCharacteristic;
+@property (nonatomic, strong) CBCharacteristic *resendCharacteristic;
+
+@property (nonatomic, strong) ZYRhythm *rhythm;
 
 @end
 
@@ -44,6 +52,25 @@ typedef struct Date {
     [super viewDidLoad];
 
     _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
+    
+    _rhythm = [[ZYRhythm alloc]init];
+
+    //设置beats break委托
+    [self.rhythm setBlockOnBeatsBreak:^(ZYRhythm *bry) {
+        NSLog(@"setBlockOnBeatsBreak call");
+        
+        //如果完成任务，即可停止beat,返回bry可以省去使用weak rhythm的麻烦
+        //        if (<#condition#>) {
+        //            [bry beatsOver];
+        //        }
+        
+    }];
+    
+    //设置beats over委托
+    [self.rhythm setBlockOnBeatsOver:^(ZYRhythm *bry) {
+        NSLog(@"setBlockOnBeatsOver call");
+    }];
+
 }
 
 - (BOOL)existPeripheral:(CBPeripheral *)peripheral {
@@ -82,17 +109,19 @@ typedef struct Date {
 
 - (void)centralManager:(CBCentralManager *)central didConnectPeripheral:(CBPeripheral *)peripheral {
     // 连接成功
+    NSLog(@"fm 连接成功");
     [self.centralManager stopScan];
     [peripheral discoverServices:nil];
     [self.tableView reloadData];
 }
 
 - (void)centralManager:(CBCentralManager *)central didFailToConnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
-    NSLog(@"连接设备失败");
+    NSLog(@"fm 连接设备失败");
     [self.tableView reloadData];
 }
 
 - (void)centralManager:(CBCentralManager *)central didDisconnectPeripheral:(CBPeripheral *)peripheral error:(NSError *)error {
+    NSLog(@"fm 断开连接");
     [self.tableView reloadData];
 }
 
@@ -103,6 +132,8 @@ typedef struct Date {
         NSLog(@"发现服务 %@", service);
         [self.peripheral discoverCharacteristics:nil forService:service];
     }
+    
+    [self.rhythm beats];
 }
 
 // 发现特征了
@@ -110,9 +141,16 @@ typedef struct Date {
     for(CBCharacteristic *characteristic in service.characteristics) {
         NSLog(@"发现特征 %@", characteristic);
         // 6、发现特征了
-        // WRITE_CHARACTERISTIC_UUID
         if([characteristic.UUID.UUIDString isEqualToString:WRITE_CHARACTERISTIC_UUID]) {
-            self.characteristic = characteristic;
+            self.writeCharacteristic = characteristic;
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
+        else if([characteristic.UUID.UUIDString isEqualToString:NOTIFY_CHARACTERISTIC_UUID]) {
+            self.notiCharacteristic = characteristic;
+            [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
+        }
+        else if ([characteristic.UUID.UUIDString isEqualToString:RESEND_CHARACTERISTIC_UUID]) {
+            self.resendCharacteristic = characteristic;
             [self.peripheral setNotifyValue:YES forCharacteristic:characteristic];
         }
         // 订阅通知
@@ -133,9 +171,26 @@ typedef struct Date {
 // 更新了配件的特征值
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     NSData *data = characteristic.value;
-    if(data.length > 7) {
+    NSLog(@"fm %@", data);
+    if(data.length > 7 && data.length != 18) {
         [self parseData:data];
     }
+}
+
+- (void)peripheral:(CBPeripheral *)peripheral didUpdateNotificationStateForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    // 发送心跳查询设备状态
+    [self sendHeart];
+}
+
+- (void)sendHeart {
+    /**<243c0400 18181000 d577>*/
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+//    Byte bytes[14] = {0x24, 0x3c, 0x04, 0x00, 0x18, 0x18, 0x10, 0x00, 0xd5, 0x77};
+//    NSData *data = [NSData dataWithBytes:bytes length:10];
+    NSData *data = [self convertHexStrToData:@"243c040018181000d577"];
+    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithoutResponse];
+    
+    [self performSelector:@selector(sendHeart) withObject:nil afterDelay:0.6];
 }
 
 #pragma mark -
@@ -170,9 +225,9 @@ typedef struct Date {
 
 #pragma mark -
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-    Byte bytes[4] = {0x01, 0x02, 0x03, 0x04};
-    NSData *data = [NSData dataWithBytes:bytes length:4];
-    [self.peripheral writeValue:data forCharacteristic:self.characteristic type:CBCharacteristicWriteWithResponse];
+//    Byte bytes[4] = {0x01, 0x02, 0x03, 0x04};
+//    NSData *data = [NSData dataWithBytes:bytes length:4];
+//    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithResponse];
 }
 
 #pragma mark -
@@ -292,6 +347,34 @@ typedef struct Date {
             }
         }
     }
+}
+
+#pragma mark - tools
+- (NSData *)convertHexStrToData:(NSString *)str {
+    if (!str || [str length] == 0) {
+        return nil;
+    }
+    
+    NSMutableData *hexData = [[NSMutableData alloc] initWithCapacity:20];
+    NSRange range;
+    if ([str length] % 2 == 0) {
+        range = NSMakeRange(0, 2);
+    } else {
+        range = NSMakeRange(0, 1);
+    }
+    for (NSInteger i = range.location; i < [str length]; i += 2) {
+        unsigned int anInt;
+        NSString *hexCharStr = [str substringWithRange:range];
+        NSScanner *scanner = [[NSScanner alloc] initWithString:hexCharStr];
+        
+        [scanner scanHexInt:&anInt];
+        NSData *entity = [[NSData alloc] initWithBytes:&anInt length:1];
+        [hexData appendData:entity];
+        
+        range.location += range.length;
+        range.length = 2;
+    }
+    return hexData;
 }
 
 @end

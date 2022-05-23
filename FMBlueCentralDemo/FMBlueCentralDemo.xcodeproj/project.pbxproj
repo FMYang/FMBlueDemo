@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		60A1B29D8D900609670D186E /* libPods-FMBlueCentralDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = BDE8B24EBEA8A387C5968B0B /* libPods-FMBlueCentralDemo.a */; };
+		E42C230C283B87570092879D /* ZYRhythm.m in Sources */ = {isa = PBXBuildFile; fileRef = E42C230B283B87570092879D /* ZYRhythm.m */; };
 		E43C3AD528337BC2004E5A78 /* ZYBLHeadObject.m in Sources */ = {isa = PBXBuildFile; fileRef = E43C3AD428337BC2004E5A78 /* ZYBLHeadObject.m */; };
 		E43C3AD8283495AE004E5A78 /* ZYBLOtherEventObject.m in Sources */ = {isa = PBXBuildFile; fileRef = E43C3AD7283495AD004E5A78 /* ZYBLOtherEventObject.m */; };
 		E4BD591A272BE4A100EDE172 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E4BD5919272BE4A100EDE172 /* AppDelegate.m */; };
@@ -23,6 +24,8 @@
 		7299FDB886D3AABEE1098482 /* Pods-FMBlueCentralDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FMBlueCentralDemo.debug.xcconfig"; path = "Target Support Files/Pods-FMBlueCentralDemo/Pods-FMBlueCentralDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		A7AB2B4AE63855D3C0245EB5 /* Pods-FMBlueCentralDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-FMBlueCentralDemo.release.xcconfig"; path = "Target Support Files/Pods-FMBlueCentralDemo/Pods-FMBlueCentralDemo.release.xcconfig"; sourceTree = "<group>"; };
 		BDE8B24EBEA8A387C5968B0B /* libPods-FMBlueCentralDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-FMBlueCentralDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		E42C230A283B87570092879D /* ZYRhythm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZYRhythm.h; sourceTree = "<group>"; };
+		E42C230B283B87570092879D /* ZYRhythm.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZYRhythm.m; sourceTree = "<group>"; };
 		E43C3AD328337BC2004E5A78 /* ZYBLHeadObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYBLHeadObject.h; sourceTree = "<group>"; };
 		E43C3AD428337BC2004E5A78 /* ZYBLHeadObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZYBLHeadObject.m; sourceTree = "<group>"; };
 		E43C3AD6283495AD004E5A78 /* ZYBLOtherEventObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZYBLOtherEventObject.h; sourceTree = "<group>"; };
@@ -106,6 +109,8 @@
 				E43C3AD428337BC2004E5A78 /* ZYBLHeadObject.m */,
 				E43C3AD6283495AD004E5A78 /* ZYBLOtherEventObject.h */,
 				E43C3AD7283495AD004E5A78 /* ZYBLOtherEventObject.m */,
+				E42C230A283B87570092879D /* ZYRhythm.h */,
+				E42C230B283B87570092879D /* ZYRhythm.m */,
 			);
 			path = FMBlueCentralDemo;
 			sourceTree = "<group>";
@@ -211,6 +216,7 @@
 				E4BD5933272BE6B800EDE172 /* FMListCell.m in Sources */,
 				E43C3AD528337BC2004E5A78 /* ZYBLHeadObject.m in Sources */,
 				E4BD592B272BE4AA00EDE172 /* main.m in Sources */,
+				E42C230C283B87570092879D /* ZYRhythm.m in Sources */,
 				E43C3AD8283495AE004E5A78 /* ZYBLOtherEventObject.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -360,6 +366,7 @@
 				DEVELOPMENT_TEAM = DQFEA2B5H2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FMBlueCentralDemo/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -370,7 +377,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ZHIYUN.www.FMBlueCentralDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyun.FMBlueCentralDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -388,6 +395,7 @@
 				DEVELOPMENT_TEAM = DQFEA2B5H2;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FMBlueCentralDemo/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -398,7 +406,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ZHIYUN.www.FMBlueCentralDemo;
+				PRODUCT_BUNDLE_IDENTIFIER = com.zhiyun.FMBlueCentralDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
