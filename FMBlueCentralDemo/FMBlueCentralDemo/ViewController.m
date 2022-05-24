@@ -11,7 +11,7 @@
 #import <Masonry/Masonry.h>
 #import "math.h"
 #import "ZYBLOtherEventObject.h"
-#import "ZYRhythm.h"
+#import "FMLogVC.h"
 
 //NSString* const sendServiceUUID16           = @"FEE9";
 NSString * const service1UUID = @"FEE9";
@@ -42,7 +42,10 @@ typedef struct Date {
 @property (nonatomic, strong) CBCharacteristic *notiCharacteristic;
 @property (nonatomic, strong) CBCharacteristic *resendCharacteristic;
 
-@property (nonatomic, strong) ZYRhythm *rhythm;
+@property (nonatomic) NSMutableArray *logs;
+@property (nonatomic) FMLogVC *logVC;
+// 过滤心跳
+@property (nonatomic) BOOL filter;
 
 @end
 
@@ -52,25 +55,8 @@ typedef struct Date {
     [super viewDidLoad];
 
     _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
-    
-    _rhythm = [[ZYRhythm alloc]init];
-
-    //设置beats break委托
-    [self.rhythm setBlockOnBeatsBreak:^(ZYRhythm *bry) {
-        NSLog(@"setBlockOnBeatsBreak call");
-        
-        //如果完成任务，即可停止beat,返回bry可以省去使用weak rhythm的麻烦
-        //        if (<#condition#>) {
-        //            [bry beatsOver];
-        //        }
-        
-    }];
-    
-    //设置beats over委托
-    [self.rhythm setBlockOnBeatsOver:^(ZYRhythm *bry) {
-        NSLog(@"setBlockOnBeatsOver call");
-    }];
-
+    _logs = @[].mutableCopy;
+    _filter = YES;
 }
 
 - (BOOL)existPeripheral:(CBPeripheral *)peripheral {
@@ -132,8 +118,6 @@ typedef struct Date {
         NSLog(@"发现服务 %@", service);
         [self.peripheral discoverCharacteristics:nil forService:service];
     }
-    
-    [self.rhythm beats];
 }
 
 // 发现特征了
@@ -171,7 +155,17 @@ typedef struct Date {
 // 更新了配件的特征值
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
     NSData *data = characteristic.value;
-    NSLog(@"fm %@", data);
+    NSString *cmdStr = [self convertDataToHexStr:data];
+    if(data.length > 7) {
+        if(self.filter) {
+            if(data.length != 18 && data.length != 11) {
+                [self.logs insertObject:cmdStr atIndex:0];
+            }
+        } else {
+            [self.logs insertObject:cmdStr atIndex:0];
+        }
+    }
+    self.logVC.datasource = self.logs;
     if(data.length > 7 && data.length != 18) {
         [self parseData:data];
     }
@@ -228,6 +222,9 @@ typedef struct Date {
 //    Byte bytes[4] = {0x01, 0x02, 0x03, 0x04};
 //    NSData *data = [NSData dataWithBytes:bytes length:4];
 //    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithResponse];
+    
+    _logVC = [[FMLogVC alloc] init];
+    [self presentViewController:_logVC animated:YES completion:nil];
 }
 
 #pragma mark -
@@ -375,6 +372,27 @@ typedef struct Date {
         range.length = 2;
     }
     return hexData;
+}
+
+- (NSString *)convertDataToHexStr:(NSData *)data {
+    if (!data || [data length] == 0) {
+        return @"";
+    }
+    NSMutableString *string = [[NSMutableString alloc] initWithCapacity:[data length]];
+    
+    [data enumerateByteRangesUsingBlock:^(const void *bytes, NSRange byteRange, BOOL *stop) {
+        unsigned char *dataBytes = (unsigned char*)bytes;
+        for (NSInteger i = 0; i < byteRange.length; i++) {
+            NSString *hexStr = [NSString stringWithFormat:@"%x", (dataBytes[i]) & 0xff];
+            if ([hexStr length] == 2) {
+                [string appendString:hexStr];
+            } else {
+                [string appendFormat:@"0%@", hexStr];
+            }
+        }
+    }];
+    
+    return string;
 }
 
 @end
