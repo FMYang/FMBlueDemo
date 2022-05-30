@@ -86,30 +86,4 @@
     return _tableView;
 }
 
-#pragma mark - UILabel两端对齐
-- (void)conversionCharacterInterval:(NSInteger)maxInteger current:(NSString *)currentString withLabel:(UILabel *)label {
-    CGRect rect = [[currentString substringToIndex:1] boundingRectWithSize:CGSizeMake(414, label.frame.size.height)
-                                     options:NSStringDrawingUsesLineFragmentOrigin|NSStringDrawingUsesFontLeading
-                                  attributes:@{NSFontAttributeName: label.font}
-                                     context:nil];
-    
-    
-    NSMutableAttributedString *attrString = [[NSMutableAttributedString alloc] initWithString:currentString];
-    float strLength = [self getLengthOfString:currentString];
-    [attrString addAttribute:NSKernAttributeName value:@(((maxInteger - strLength) * rect.size.width)/(strLength - 1)) range:NSMakeRange(0, strLength)];
-    label.attributedText = attrString;
-}
-
--  (float)getLengthOfString:(NSString*)str {
-    float strLength = 0;
-    char *p = (char *)[str cStringUsingEncoding:NSUnicodeStringEncoding];
-    for (NSInteger i = 0 ; i < [str lengthOfBytesUsingEncoding:NSUnicodeStringEncoding]; i++) {
-        if (*p) {
-            strLength++;
-        }
-        p++;
-    }
-    return strLength/2;
-}
-
 @end

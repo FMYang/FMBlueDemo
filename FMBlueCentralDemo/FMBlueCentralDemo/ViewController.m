@@ -13,9 +13,8 @@
 #import "ZYBLOtherEventObject.h"
 #import "FMLogVC.h"
 
-//NSString* const sendServiceUUID16           = @"FEE9";
-NSString * const service1UUID = @"FEE9";
-NSString * const service2UUID = @"0000FEE9-0000-1000-8000-00805F9B34FB";
+NSString * const sendServiceUUID16 = @"FEE9";
+NSString * const sendServiceUUID128 = @"0000FEE9-0000-1000-8000-00805F9B34FB";
 
 NSString* const WRITE_CHARACTERISTIC_UUID   = @"D44BC439-ABFD-45A2-B575-925416129600";
 NSString* const NOTIFY_CHARACTERISTIC_UUID  = @"D44BC439-ABFD-45A2-B575-925416129601";
@@ -75,8 +74,8 @@ typedef struct Date {
     if(central.state == CBManagerStatePoweredOn) {
         [self.centralManager scanForPeripheralsWithServices:nil options:nil];
         
-        CBUUID *uuid1 = [CBUUID UUIDWithString:service1UUID];
-        CBUUID *uuid2 = [CBUUID UUIDWithString:service2UUID];
+        CBUUID *uuid1 = [CBUUID UUIDWithString:sendServiceUUID16];
+        CBUUID *uuid2 = [CBUUID UUIDWithString:sendServiceUUID128];
         NSArray<CBPeripheral *> *array = [self.centralManager retrieveConnectedPeripheralsWithServices:@[uuid1,uuid2]];
         self.peripheralList = [array mutableCopy];
         [self.tableView reloadData];
@@ -154,6 +153,7 @@ typedef struct Date {
 
 // 更新了配件的特征值
 - (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error {
+    // 接受到数据
     NSData *data = characteristic.value;
     NSString *cmdStr = [self convertDataToHexStr:data];
     if(data.length > 7) {
@@ -177,13 +177,13 @@ typedef struct Date {
 }
 
 - (void)sendHeart {
-    /**<243c0400 18181000 d577>*/
     [NSObject cancelPreviousPerformRequestsWithTarget:self];
-//    Byte bytes[14] = {0x24, 0x3c, 0x04, 0x00, 0x18, 0x18, 0x10, 0x00, 0xd5, 0x77};
-//    NSData *data = [NSData dataWithBytes:bytes length:10];
-    NSData *data = [self convertHexStrToData:@"243c040018181000d577"];
-    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithoutResponse];
+    // 能够单次发送给配件的最大字节长度
+//    NSInteger mtu = [self.peripheral  maximumWriteValueLengthForType:CBCharacteristicWriteWithoutResponse];
     
+    NSData *data = [self convertHexStrToData:@"243c040018181000d577"];
+    // 发送心跳
+    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithoutResponse];
     [self performSelector:@selector(sendHeart) withObject:nil afterDelay:0.6];
 }
 
@@ -219,10 +219,6 @@ typedef struct Date {
 
 #pragma mark -
 - (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-//    Byte bytes[4] = {0x01, 0x02, 0x03, 0x04};
-//    NSData *data = [NSData dataWithBytes:bytes length:4];
-//    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithResponse];
-    
     _logVC = [[FMLogVC alloc] init];
     [self presentViewController:_logVC animated:YES completion:nil];
 }
@@ -250,7 +246,7 @@ typedef struct Date {
     return _peripheralList;
 }
 
-#pragma mark - 数据解析
+#pragma mark - 数据解析（根据协议）
 - (void)parseData:(NSData *)data {
     ZYBLHead *head = (ZYBLHead *)data.bytes;
     
