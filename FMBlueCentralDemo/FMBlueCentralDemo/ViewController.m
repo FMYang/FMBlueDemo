@@ -183,7 +183,7 @@ typedef struct Date {
     
     NSData *data = [self convertHexStrToData:@"243c040018181000d577"];
     // 发送心跳
-    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithoutResponse];
+    [self.peripheral writeValue:data forCharacteristic:self.writeCharacteristic type:CBCharacteristicWriteWithResponse];
     [self performSelector:@selector(sendHeart) withObject:nil afterDelay:0.6];
 }
 
